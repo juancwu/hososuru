@@ -1,11 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"html/template"
 	"io"
 	"log"
 	"os"
 
+	"github.com/gorilla/websocket"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -15,6 +17,30 @@ import (
 
 type TemplateRenderer struct {
     templates *template.Template
+}
+
+var upgrader = websocket.Upgrader{}
+
+func wsHandler(c echo.Context) error {
+    ws, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
+    if err != nil {
+        return err
+    }
+    defer ws.Close()
+
+    for {
+        // read message from browser
+        _, msg, err := ws.ReadMessage()
+        if err != nil {
+            return err
+        }
+
+        fmt.Printf("%s\n", msg)
+
+        if err := ws.WriteMessage(websocket.TextMessage, msg); err != nil {
+            return err
+        }
+    }
 }
 
 func main() {
@@ -39,6 +65,7 @@ func main() {
     e.Static("/static", "static")
 
     e.GET("/", pages.Index)
+    e.GET("/ws", wsHandler)
 
     e.Logger.Fatal(e.Start(":5173"))
 }

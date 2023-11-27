@@ -17,6 +17,19 @@
     </head>
 
     <body class="h-full w-full">
-        <h1>Here</h1>
+        <h1 id="status">Status: Disconnected</h1>
+        <script>
+            const status = document.getElementById("status");
+            const socket = new WebSocket("ws://localhost:5173/ws");
+
+            socket.onopen = function () {
+                status.innerHTML = "Status: Connected";
+                socket.send("Hi from client");
+            };
+
+            socket.onmessage = function (e) {
+                console.log("Message: ", e);
+            };
+        </script>
     </body>
 </html>
