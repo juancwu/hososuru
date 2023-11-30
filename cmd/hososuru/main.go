@@ -1,46 +1,22 @@
 package main
 
 import (
-	"fmt"
 	"html/template"
 	"io"
 	"log"
 	"os"
 
-	"github.com/gorilla/websocket"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 
+	"github.com/juancwu/hososuru/pkg/api"
 	"github.com/juancwu/hososuru/pkg/pages"
+	"github.com/juancwu/hososuru/pkg/ws"
 )
+
 
 type TemplateRenderer struct {
     templates *template.Template
-}
-
-var upgrader = websocket.Upgrader{}
-
-func wsHandler(c echo.Context) error {
-    ws, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
-    if err != nil {
-        return err
-    }
-    defer ws.Close()
-
-    for {
-        // read message from browser
-        _, msg, err := ws.ReadMessage()
-        if err != nil {
-            return err
-        }
-
-        fmt.Printf("%s\n", msg)
-
-        if err := ws.WriteMessage(websocket.TextMessage, msg); err != nil {
-            return err
-        }
-    }
 }
 
 func main() {
@@ -61,11 +37,17 @@ func main() {
         templates: templates,
     }
 
-    e.Use(middleware.Logger())
     e.Static("/static", "static")
 
     e.GET("/", pages.Index)
-    e.GET("/ws", wsHandler)
+    e.GET("/room/:roomId", pages.Room)
+    e.GET("/ws/:roomId", ws.ServeWs)
+    e.POST("/new", api.CreateNewRoom)
+    e.GET("/hoso/:roomId", api.ServeHoso)
+
+    e.Any("/*", func (c echo.Context) error {
+        return c.Render(200, "not-found.html", nil)
+    })
 
     e.Logger.Fatal(e.Start(":5173"))
 }

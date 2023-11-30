@@ -16,20 +16,36 @@
         <title>Hososuru!</title>
     </head>
 
-    <body class="h-full w-full">
-        <h1 id="status">Status: Disconnected</h1>
-        <script>
-            const status = document.getElementById("status");
-            const socket = new WebSocket("ws://localhost:5173/ws");
+    <body class="flex h-full w-full items-center justify-center">
+        <form enctype="multipart/form-data" hx-post="/new" class="space-y-4">
+            <h3>Select a movie to broadcast and start a broadcast!</h3>
 
-            socket.onopen = function () {
-                status.innerHTML = "Status: Connected";
-                socket.send("Hi from client");
-            };
-
-            socket.onmessage = function (e) {
-                console.log("Message: ", e);
-            };
-        </script>
+            <div>
+                <label
+                    for="cover-photo"
+                    class="block text-sm font-medium leading-6 text-white"
+                >
+                    Movie
+                </label>
+                <input
+                    id="file-upload"
+                    name="movie"
+                    type="file"
+                    accept="video/mp4, video/x-matroska"
+                />
+            </div>
+            <button
+                type="submit"
+                class="rounded-md bg-indigo-500 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+                _="on click toggle @disabled until htmx:afterOnLoad"
+            >
+                Start!
+            </button>
+            <img
+                id="indicator"
+                class="htmx-indicator"
+                src="/static/spinning-circles.svg"
+            />
+        </form>
     </body>
 </html>
