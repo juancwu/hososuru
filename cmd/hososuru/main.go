@@ -9,7 +9,6 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 
-	"github.com/juancwu/hososuru/pkg/api"
 	"github.com/juancwu/hososuru/pkg/pages"
 	"github.com/juancwu/hososuru/pkg/ws"
 )
@@ -40,10 +39,7 @@ func main() {
     e.Static("/static", "static")
 
     e.GET("/", pages.Index)
-    e.GET("/room/:roomId", pages.Room)
-    e.GET("/ws/:roomId", ws.ServeWs)
-    e.POST("/new", api.CreateNewRoom)
-    e.GET("/hoso/:roomId", api.ServeHoso)
+    e.GET("/ws", ws.Handle)
 
     e.Any("/*", func (c echo.Context) error {
         return c.Render(200, "not-found.html", nil)
