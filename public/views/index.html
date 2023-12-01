@@ -2,36 +2,29 @@
 <html lang="en">
     <head>
         <meta charset="utf-8" />
+        <script
+            src="https://unpkg.com/htmx.org@1.9.9"
+            integrity="sha384-QFjmbokDn2DjBjq+fM+8LUIVrAgqcNW2s0PjAxHETgRn9l4fvX31ZxDxvwQnyMOX"
+            crossorigin="anonymous"
+        ></script>
+        <script src="https://unpkg.com/htmx.org/dist/ext/ws.js"></script>
         <title>WebSocket</title>
     </head>
 
     <body>
         <p id="output"></p>
 
+        <div hx-ext="ws" ws-connect="/ws">
+            <div id="chat_room"></div>
+            <form id="form" ws-send>
+                <input name="chat_message" />
+            </form>
+        </div>
         <script>
-            var loc = window.location;
-            var uri = "ws:";
-
-            if (loc.protocol === "https:") {
-                uri = "wss:";
-            }
-            uri += "//" + loc.host;
-            uri += loc.pathname + "ws";
-
-            ws = new WebSocket(uri);
-
-            ws.onopen = function () {
-                console.log("Connected");
-            };
-
-            ws.onmessage = function (evt) {
-                var out = document.getElementById("output");
-                out.innerHTML += evt.data + "<br>";
-            };
-
-            setInterval(function () {
-                ws.send("Hello, Server!");
-            }, 1000);
+            document.body.addEventListener("htmx:wsAfterMessage", (e) => {
+                document.querySelector("#chat_room").innerHTML =
+                    e.detail.message;
+            });
         </script>
     </body>
 </html>
