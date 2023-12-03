@@ -14,7 +14,8 @@ var (
 )
 
 type Message struct {
-    ChatMessage string `json:"chat_message"`
+    Content string `json:"content"`
+    Action string `json:"action"`
 }
 
 type Client struct {
@@ -39,7 +40,11 @@ func (c *Client) readMessage(ctx echo.Context) {
         return nil
     })
 
-    defer c.Conn.Close()
+    // defer c.Conn.Close()
+    defer func() {
+        fmt.Println("Closing ws connection...")
+        c.Conn.Close()
+    }()
     
     for {
         _, msg, err := c.Conn.ReadMessage()
@@ -52,8 +57,8 @@ func (c *Client) readMessage(ctx echo.Context) {
             ctx.Logger().Error(err)
             continue
         }
-        fmt.Printf("From Client: %s\n", message.ChatMessage)
-        c.MsgChan <- message.ChatMessage
+        fmt.Printf("From Client: %s\nAction: %s\n", message.Content, message.Action)
+        c.MsgChan <- message.Content
     }
 }
 

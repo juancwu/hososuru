@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <link rel="stylesheet" href="/static/styles.css" />
+        <script
+            src="https://unpkg.com/htmx.org@1.9.9"
+            integrity="sha384-QFjmbokDn2DjBjq+fM+8LUIVrAgqcNW2s0PjAxHETgRn9l4fvX31ZxDxvwQnyMOX"
+            crossorigin="anonymous"
+        ></script>
+        <script src="https://unpkg.com/htmx.org/dist/ext/ws.js"></script>
+        <title>WebSocket</title>
+    </head>
+
+    <body>
+        <p id="output"></p>
+
+        <div hx-ext="ws" ws-connect="/ws">
+            <div id="chat_room"></div>
+            <div class="space-y-4">
+                <form ws-send>
+                    <input name="content" class="border border-black" />
+                    <input name="action" value="chat" hidden readonly />
+                    <button
+                        type="submit"
+                        class="bg-indigo-500 p-6 font-semibold text-white"
+                    >
+                        Submit
+                    </button>
+                </form>
+                <form ws-send>
+                    <input name="content" class="border border-black" />
+                    <input name="action" value="toggle" hidden readonly />
+                    <button
+                        type="submit"
+                        class="bg-indigo-500 p-6 font-semibold text-white"
+                    >
+                        Toggle
+                    </button>
+                </form>
+            </div>
+        </div>
+        <script>
+            document.body.addEventListener("htmx:wsAfterMessage", (e) => {
+                document.querySelector("#chat_room").innerHTML =
+                    e.detail.message;
+            });
+            document.body.addEventListener("htmx:wsConfigSend", (e) => {
+                console.log(e);
+            });
+            document.body.addEventListener("htmx:wsBeforeSend", (e) => {
+                console.log(e);
+            });
+            document.body.addEventListener("htmx:wsAfterSend", (e) => {
+                console.log(e);
+            });
+        </script>
+    </body>
+</html>
