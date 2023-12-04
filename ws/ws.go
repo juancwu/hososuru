@@ -11,11 +11,12 @@ import (
 
 var (
     upgrader = websocket.Upgrader{}
+    PendingRooms = make(map[string]string)
 )
 
 type Message struct {
     Content string `json:"content"`
-    Action string `json:"action"`
+    EventType string `json:"eventType"`
 }
 
 type Client struct {
@@ -57,7 +58,7 @@ func (c *Client) readMessage(ctx echo.Context) {
             ctx.Logger().Error(err)
             continue
         }
-        fmt.Printf("From Client: %s\nAction: %s\n", message.Content, message.Action)
+        fmt.Printf("From Client: %s\nEventType: %s\n", message.Content, message.EventType)
         c.MsgChan <- message.Content
     }
 }

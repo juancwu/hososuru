@@ -12,6 +12,7 @@ templ RootLayout(contents templ.Component, title *string) {
                 integrity="sha384-QFjmbokDn2DjBjq+fM+8LUIVrAgqcNW2s0PjAxHETgRn9l4fvX31ZxDxvwQnyMOX"
                 crossorigin="anonymous"
             ></script>
+            <script src="https://unpkg.com/htmx.org/dist/ext/ws.js"></script>
             <script src="https://unpkg.com/hyperscript.org@0.9.12"></script>
             if title != nil {
                 <title>{ *title }</title>

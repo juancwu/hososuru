@@ -1,0 +1,106 @@
+package views
+
+templ Room(roomId, mtype string) {
+    <header class="border-b border-white/10 py-6 pl-12">
+        <h1>Connection Status: <span id="status">Disconnected</span></h1>
+        <h1>Room ID: <span id="status">{ roomId }</span></h1>
+    </header>
+    <div
+        class="hidden lg:fixed lg:inset-y-0 lg:right-0 lg:z-10 lg:flex lg:w-72 lg:flex-col"
+    >
+        <div
+            class="flex grow flex-col gap-y-5 overflow-y-auto border-l border-white/10 bg-zinc-900 px-6 pb-4"
+        >
+            <form ws-send="send:submit" class="mt-auto space-y-2">
+                <div>
+                    <label
+                        for="chatInput"
+                        class="block text-sm font-medium leading-6 text-zinc-400"
+                    >
+                        Message
+                    </label>
+                    <span id="chatInputDescription" class="sr-only">
+                        Enter a message to send to people in the broadcast.
+                    </span>
+                    <input
+                        id="chatInput"
+                        name="chatMessage"
+                        min="1"
+                        class="block w-full rounded-md border-0 bg-zinc-800 px-2.5 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 placeholder:text-zinc-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                        aria-describedby="chatInputDescription"
+                        required
+                    />
+                </div>
+                <div class="flex items-center justify-end">
+                    <button
+                        type="submit"
+                        class="rounded-md bg-indigo-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-md hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                    >
+                        Send
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <main class="flex items-center pt-8 px-8 lg:pr-80">
+        <div class="space-y-4" hx-ext="ws" ws-connect="/ws">
+            <video id="hoso" class="w-full">
+                <source src={"/api/hoso/" + roomId } type={mtype} />
+            </video>
+            <div>
+                <form ws-send="send:submit">
+                    <input hidden name="content" value="play" id="videoStatus" />
+                    <input hidden name="eventType" value="toggleVideo" readonly />
+                    <button
+                        type="submit"
+                        class="capitalize rounded-md bg-indigo-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-md hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                        id="playBtn"
+                    >
+                        play
+                    </button>
+                </form>
+            </div>
+        </div>
+    </main>
+    <script>
+        const hoso = document.querySelector("#hoso");
+        const playBtn = document.querySelector("#playBtn");
+        const videoStatus = document.querySelector("#videoStatus");
+        const play = "play";
+        const pause = "pause";
+        let action = play;
+
+        function toggleVideo() {
+            if (action === "play") {
+                // play video
+                hoso.play();
+                playBtn.innerHTML = pause;
+                action = pause;
+            } else {
+                hoso.pause();
+                playBtn.innerHTML = play;
+                action = play;
+            }
+            videoStatus.value = action;
+        }
+
+        function onOpen() {
+            document.querySelector("#status").innerHTML = "Connected";
+        }
+
+        function onClose() {
+            document.querySelector("#status").innerHTML = "Disconnected";
+        }
+
+        function onConnecting() {
+            document.querySelector("#status").innerHTML = "Connecting...";
+        }
+
+        document.body.addEventListener("htmx:wsConnecting", onConnecting);
+        document.body.addEventListener("htmx:wsOpen", onOpen);
+        document.body.addEventListener("htmx:wsClose", onClose);
+        document.body.addEventListener("htmx:wsAfterSend", () => {
+            toggleVideo();
+        });
+    </script>
+}
