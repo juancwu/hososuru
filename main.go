@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -37,7 +36,9 @@ func main() {
 
 		filename, ok := ws.PendingRooms[roomId]
 		if !ok {
-			return errors.New(fmt.Sprintf("No hoso for room with id: %s", roomId))
+            component := views.NotFound()
+            views.RootLayout(component, nil).Render(context.Background(), c.Response().Writer)
+            return nil
 		}
 
         videoPath := fmt.Sprintf("%s/%s/%s", constants.TmpFileFolder, roomId, filename)
@@ -52,7 +53,8 @@ func main() {
 
         return nil
 	})
-	e.GET("/ws", ws.Handle)
+
+    e.GET("/ws/:roomId", ws.Handle)
 
 	e.POST("/api/new", api.CreateNewRoom)
 	e.GET("/api/hoso/:roomId", api.ServeHoso)

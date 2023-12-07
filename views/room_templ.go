@@ -10,6 +10,61 @@ import "context"
 import "io"
 import "bytes"
 
+import "github.com/juancwu/hososuru/ws"
+
+func handler(chatEvt, toggleEvt string) templ.ComponentScript {
+	return templ.ComponentScript{
+		Name: `__templ_handler_c69a`,
+		Function: `function __templ_handler_c69a(chatEvt, toggleEvt){const hoso = document.querySelector("#hoso");
+    const playBtn = document.querySelector("#playBtn");
+    const videoStatus = document.querySelector("#videoStatus");
+    const play = "play";
+    const pause = "pause";
+
+    function toggleVideo(action) {
+        console.log(` + "`" + `toggle video: ${action}` + "`" + `)
+        if (action === play) {
+            // play video
+            hoso.play();
+            playBtn.innerHTML = pause;
+            action = pause;
+        } else {
+            hoso.pause();
+            playBtn.innerHTML = play;
+            action = play;
+        }
+        videoStatus.value = action;
+    }
+
+    function onOpen() {
+        document.querySelector("#status").innerHTML = "Connected";
+    }
+
+    function onClose() {
+        document.querySelector("#status").innerHTML = "Disconnected";
+    }
+
+    function onConnecting() {
+        document.querySelector("#status").innerHTML = "Connecting...";
+    }
+
+    document.body.addEventListener("htmx:wsConnecting", onConnecting);
+    document.body.addEventListener("htmx:wsOpen", onOpen);
+    document.body.addEventListener("htmx:wsClose", onClose);
+    document.body.addEventListener("htmx:wsAfterMessage", (e) => {
+        if (e.detail.message.startsWith(toggleEvt)) {
+            const action = e.detail.message.split(":")[1]
+            toggleVideo(action);
+        } else {
+            // do nothing
+            console.log(` + "`" + `Received message in chat: ${data.content}` + "`" + `)
+        }
+    });}`,
+		Call:       templ.SafeScript(`__templ_handler_c69a`, chatEvt, toggleEvt),
+		CallInline: templ.SafeScriptInline(`__templ_handler_c69a`, chatEvt, toggleEvt),
+	}
+}
+
 func Room(roomId, mtype string) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
@@ -59,7 +114,15 @@ func Room(roomId, mtype string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</span></h1></header><div class=\"hidden lg:fixed lg:inset-y-0 lg:right-0 lg:z-10 lg:flex lg:w-72 lg:flex-col\"><div class=\"flex grow flex-col gap-y-5 overflow-y-auto border-l border-white/10 bg-zinc-900 px-6 pb-4\"><form ws-send=\"send:submit\" class=\"mt-auto space-y-2\"><div><label for=\"chatInput\" class=\"block text-sm font-medium leading-6 text-zinc-400\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</span></h1></header><div hx-ext=\"ws\" ws-connect=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString("/ws/" + roomId))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"><div class=\"hidden lg:fixed lg:inset-y-0 lg:right-0 lg:z-10 lg:flex lg:w-72 lg:flex-col\"><div class=\"flex grow flex-col gap-y-5 overflow-y-auto border-l border-white/10 bg-zinc-900 px-6 pb-4\"><form ws-send=\"send:submit\" class=\"mt-auto space-y-2\"><div><label for=\"chatInput\" class=\"block text-sm font-medium leading-6 text-zinc-400\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -77,7 +140,15 @@ func Room(roomId, mtype string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</span> <input id=\"chatInput\" name=\"chatMessage\" min=\"1\" class=\"block w-full rounded-md border-0 bg-zinc-800 px-2.5 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 placeholder:text-zinc-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6\" aria-describedby=\"chatInputDescription\" required></div><div class=\"flex items-center justify-end\"><button type=\"submit\" class=\"rounded-md bg-indigo-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-md hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</span> <input id=\"chatInput\" name=\"content\" min=\"1\" class=\"block w-full rounded-md border-0 bg-zinc-800 px-2.5 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 placeholder:text-zinc-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6\" aria-describedby=\"chatInputDescription\" required></div><input hidden name=\"eventType\" value=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(ws.ChatEvent))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" readonly><div class=\"flex items-center justify-end\"><button type=\"submit\" class=\"rounded-md bg-indigo-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-md hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -86,7 +157,7 @@ func Room(roomId, mtype string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</button></div></form></div></div><main class=\"flex items-center pt-8 px-8 lg:pr-80\"><div class=\"space-y-4\" hx-ext=\"ws\" ws-connect=\"/ws\"><video id=\"hoso\" class=\"w-full\"><source src=\"")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</button></div></form></div></div><main class=\"flex items-center pt-8 px-8 lg:pr-80\"><div class=\"space-y-4\"><video controls muted id=\"hoso\" class=\"w-full\"><source src=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -102,7 +173,15 @@ func Room(roomId, mtype string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"></video><div><form ws-send=\"send:submit\"><input hidden name=\"content\" value=\"play\" id=\"videoStatus\"> <input hidden name=\"eventType\" value=\"toggleVideo\" readonly> <button type=\"submit\" class=\"capitalize rounded-md bg-indigo-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-md hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600\" id=\"playBtn\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"></video><div><form ws-send=\"send:submit\"><input hidden name=\"content\" value=\"play\" id=\"videoStatus\"> <input hidden name=\"eventType\" value=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(ws.ToggleEvent))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" readonly> <button type=\"submit\" class=\"capitalize rounded-md bg-indigo-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-md hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600\" id=\"playBtn\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -111,56 +190,11 @@ func Room(roomId, mtype string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</button></form></div></div></main><script>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</button></form></div></div></main></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Var10 := `
-        const hoso = document.querySelector("#hoso");
-        const playBtn = document.querySelector("#playBtn");
-        const videoStatus = document.querySelector("#videoStatus");
-        const play = "play";
-        const pause = "pause";
-        let action = play;
-
-        function toggleVideo() {
-            if (action === "play") {
-                // play video
-                hoso.play();
-                playBtn.innerHTML = pause;
-                action = pause;
-            } else {
-                hoso.pause();
-                playBtn.innerHTML = play;
-                action = play;
-            }
-            videoStatus.value = action;
-        }
-
-        function onOpen() {
-            document.querySelector("#status").innerHTML = "Connected";
-        }
-
-        function onClose() {
-            document.querySelector("#status").innerHTML = "Disconnected";
-        }
-
-        function onConnecting() {
-            document.querySelector("#status").innerHTML = "Connecting...";
-        }
-
-        document.body.addEventListener("htmx:wsConnecting", onConnecting);
-        document.body.addEventListener("htmx:wsOpen", onOpen);
-        document.body.addEventListener("htmx:wsClose", onClose);
-        document.body.addEventListener("htmx:wsAfterSend", () => {
-            toggleVideo();
-        });
-    `
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var10)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</script>")
+		templ_7745c5c3_Err = handler(ws.ChatEvent, ws.ToggleEvent).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
