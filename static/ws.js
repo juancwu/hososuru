@@ -1,5 +1,6 @@
 const hoso = document.querySelector("#hoso");
 const playBtn = document.querySelector("#playBtn");
+const videoStatus = document.querySelector("#videoStatus");
 const play = "play";
 const pause = "pause";
 let action = play;
@@ -15,6 +16,7 @@ function toggleVideo() {
         playBtn.innerHTML = play;
         action = play;
     }
+    videoStatus.value = action;
 }
 
 function onOpen() {
@@ -32,10 +34,10 @@ function onConnecting() {
 document.body.addEventListener("htmx:wsConnecting", onConnecting);
 document.body.addEventListener("htmx:wsOpen", onOpen);
 document.body.addEventListener("htmx:wsClose", onClose);
-
-document.body.addEventListener("htmx:wsConfigSend", (e) => {
-    if (e.detail.parameters["videoStatus"]) {
-        e.detail.parameters["action"] = action;
-        toggleVideo();
-    }
+document.body.addEventListener("htmx:wsAfterSend", (e) => {
+    const data = JSON.parse(e.detail.message);
+    if (data.eventType === "") toggleVideo();
+});
+document.body.addEventListener("htmx:wsAfterMessage", (e) => {
+    console.log(e.detail.message);
 });

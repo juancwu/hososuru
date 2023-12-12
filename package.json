@@ -5,14 +5,15 @@
     "main": "index.js",
     "scripts": {
         "dev": "concurrently \"pnpm run tw:dev\" \"air\"",
-        "tw:dev": "tailwindcss -i ./public/css/styles.css -o ./static/styles.css --watch",
-        "tw:build": "tailwindcss -i ./public/css/styles.css -i ./static/styles.css --minify",
+        "tw:dev": "tailwindcss -i ./css/styles.css -o ./static/styles.css --watch",
+        "tw:build": "tailwindcss -i ./css/styles.css -i ./static/styles.css --minify",
         "build": "tw:build"
     },
     "keywords": [],
     "author": "",
     "license": "MIT",
     "devDependencies": {
+        "@tailwindcss/forms": "^0.5.7",
         "autoprefixer": "^10.4.16",
         "concurrently": "^8.2.2",
         "postcss": "^8.4.31",

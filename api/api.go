@@ -1,17 +1,18 @@
 package api
 
 import (
-	// "errors"
+	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 
 	"github.com/labstack/echo/v4"
 	gonanoid "github.com/matoous/go-nanoid"
 
-	"github.com/juancwu/hososuru/pkg/constants"
-	"github.com/juancwu/hososuru/pkg/ws"
+	"github.com/juancwu/hososuru/constants"
+	"github.com/juancwu/hososuru/ws"
 )
 
 func CreateNewRoom(c echo.Context) error {
@@ -21,27 +22,33 @@ func CreateNewRoom(c echo.Context) error {
 	// create new folder
 	newPath := fmt.Sprintf("%s/%s", constants.TmpFileFolder, roomId)
 	if err := os.MkdirAll(newPath, os.ModePerm); err != nil {
+        log.Println(err)
 		return err
 	}
 
-	file, err := c.FormFile("movie")
+	file, err := c.FormFile("movie-upload")
 	if err != nil {
+        log.Println(err)
 		return err
 	}
 
 	src, err := file.Open()
 	if err != nil {
+        log.Println(err)
 		return err
 	}
 	defer src.Close()
 
-	dst, err := os.Create(fmt.Sprintf("%s/%s", newPath, file.Filename))
+    videoPath := fmt.Sprintf("%s/%s", newPath, file.Filename)
+	dst, err := os.Create(videoPath)
 	if err != nil {
+        log.Println(err)
 		return err
 	}
 	defer dst.Close()
 
 	if _, err = io.Copy(dst, src); err != nil {
+        log.Println(err)
 		return err
 	}
 
@@ -54,12 +61,10 @@ func CreateNewRoom(c echo.Context) error {
 
 func ServeHoso(c echo.Context) error {
 	roomId := c.Param("roomId")
-	// filename, ok := ws.PendingRooms[roomId]
-	// if !ok {
-	// 	return errors.New(fmt.Sprintf("No hoso for room with id: %s", roomId))
-	// }
-    filename := "Barbie.2023.1080p.WEBRip.x264.AAC5.1-[YTS.MX].mp4"
-
+	filename, ok := ws.PendingRooms[roomId]
+	if !ok {
+		return errors.New(fmt.Sprintf("No hoso for room with id: %s", roomId))
+	}
 	videoPath := fmt.Sprintf("%s/%s/%s", constants.TmpFileFolder, roomId, filename)
     http.ServeFile(c.Response().Writer, c.Request(), videoPath)
     return nil
