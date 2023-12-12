@@ -754,6 +754,16 @@ select {
   margin-right: auto;
 }
 
+.my-2 {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.my-4 {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
 .mt-1 {
   margin-top: 0.25rem;
 }
@@ -782,6 +792,10 @@ select {
   display: block;
 }
 
+.inline {
+  display: inline;
+}
+
 .flex {
   display: flex;
 }
@@ -808,6 +822,14 @@ select {
 
 .h-full {
   height: 100%;
+}
+
+.h-\[calc\(100\%_-_100px\)\] {
+  height: calc(100% - 100px);
+}
+
+.max-h-\[calc\(100\%_-_100px\)\] {
+  max-height: calc(100% - 100px);
 }
 
 .min-h-full {
@@ -889,6 +911,16 @@ select {
   margin-bottom: calc(1rem * var(--tw-space-y-reverse));
 }
 
+.divide-y-2 > :not([hidden]) ~ :not([hidden]) {
+  --tw-divide-y-reverse: 0;
+  border-top-width: calc(2px * calc(1 - var(--tw-divide-y-reverse)));
+  border-bottom-width: calc(2px * var(--tw-divide-y-reverse));
+}
+
+.divide-white\/10 > :not([hidden]) ~ :not([hidden]) {
+  border-color: rgb(255 255 255 / 0.1);
+}
+
 .overflow-y-auto {
   overflow-y: auto;
 }
@@ -927,6 +959,10 @@ select {
 
 .border-white\/25 {
   border-color: rgb(255 255 255 / 0.25);
+}
+
+.border-b-white\/10 {
+  border-bottom-color: rgb(255 255 255 / 0.1);
 }
 
 .bg-gray-900 {
@@ -1021,6 +1057,11 @@ select {
 .py-6 {
   padding-top: 1.5rem;
   padding-bottom: 1.5rem;
+}
+
+.py-4 {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
 }
 
 .pb-12 {

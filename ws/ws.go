@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/juancwu/hososuru/views"
 	"github.com/labstack/echo/v4"
 	gonanoid "github.com/matoous/go-nanoid"
 )
@@ -121,6 +122,13 @@ func (c *client) writeMessage(ctx echo.Context, roomId string) {
 				switch msg.EvtType {
 				case ChatEvent:
 					fmt.Printf("Received %s\n", ChatEvent)
+                    message := views.Message(msg.Content)
+                    buffer := views.ToBuffer(message)
+                    err := c.conn.WriteMessage(websocket.TextMessage, buffer)
+                    if err != nil {
+                        ctx.Logger().Error(err)
+                        return
+                    }
 				case ToggleEvent:
 					fmt.Printf("Received %s\n", ToggleEvent)
 					msg.Content = fmt.Sprintf("%s:%s", ToggleEvent, msg.Content)

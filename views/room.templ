@@ -1,13 +1,13 @@
 package views
 
-import "github.com/juancwu/hososuru/ws"
-
-script handler(chatEvt, toggleEvt string) {
+script handler() {
     const hoso = document.querySelector("#hoso");
     const playBtn = document.querySelector("#playBtn");
     const videoStatus = document.querySelector("#videoStatus");
     const play = "play";
     const pause = "pause";
+    const chatEvt = "chat_event";
+    const toggleEvt = "toggle_event";
 
     function toggleVideo(action) {
         console.log(`toggle video: ${action}`)
@@ -44,8 +44,17 @@ script handler(chatEvt, toggleEvt string) {
             const action = e.detail.message.split(":")[1]
             toggleVideo(action);
         } else {
-            // do nothing
-            console.log(`Received message in chat: ${data.content}`)
+            const form = document.querySelector("#chatform");
+            const chatbox = document.querySelector("#chatbox");
+            const lastChild = chatbox?.lastElementChild;
+            if (lastChild) {
+                lastChild.scrollIntoView({
+                        block: "end",
+                        inline: "nearest",
+                        behaviour: "smooth",
+                    });
+            }
+            form.reset();
         }
     });
 }
@@ -65,7 +74,8 @@ templ Room(roomId, mtype string) {
             <div
                 class="flex grow flex-col gap-y-5 overflow-y-auto border-l border-white/10 bg-zinc-900 px-6 pb-4"
             >
-                <form ws-send="send:submit" class="mt-auto space-y-2">
+            <div id="chatbox" class="space-y-2 h-[calc(100%_-_100px)] overflow-y-auto mt-6"></div>
+                <form id="chatform" ws-send="send:submit" class="mt-auto space-y-2">
                     <div>
                         <label
                             for="chatInput"
@@ -85,7 +95,7 @@ templ Room(roomId, mtype string) {
                             required
                         />
                     </div>
-                    <input hidden name="eventType" value={ws.ChatEvent} readonly />
+                    <input hidden name="eventType" value="chat_event" readonly />
                     <div class="flex items-center justify-end">
                         <button
                             type="submit"
@@ -105,7 +115,7 @@ templ Room(roomId, mtype string) {
                 <div>
                     <form ws-send="send:submit">
                         <input hidden name="content" value="play" id="videoStatus" />
-                        <input hidden name="eventType" value={ws.ToggleEvent} readonly />
+                        <input hidden name="eventType" value="toggle_event" readonly />
                         <button
                             type="submit"
                             class="capitalize rounded-md bg-indigo-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-md hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
@@ -118,5 +128,5 @@ templ Room(roomId, mtype string) {
             </div>
         </main>
     </div>
-    @handler(ws.ChatEvent, ws.ToggleEvent)
+    @handler()
 }
