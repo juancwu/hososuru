@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 
 	"github.com/gabriel-vasile/mimetype"
@@ -27,8 +28,7 @@ func main() {
 	e.Static("/static", "static")
 
 	e.GET("/", func(c echo.Context) error {
-		page := views.Landing()
-		views.RootLayout(page, nil).Render(context.Background(), c.Response().Writer)
+		views.Landing().Render(context.Background(), c.Response().Writer)
 		return nil
 	})
 	e.GET("/room/:roomId", func(c echo.Context) error {
@@ -36,9 +36,7 @@ func main() {
 
 		filename, ok := ws.PendingRooms[roomId]
 		if !ok {
-            component := views.NotFound()
-            views.RootLayout(component, nil).Render(context.Background(), c.Response().Writer)
-            return nil
+            return c.Redirect(http.StatusTemporaryRedirect, "/404")
 		}
 
         videoPath := fmt.Sprintf("%s/%s/%s", constants.TmpFileFolder, roomId, filename)
@@ -47,9 +45,7 @@ func main() {
             return err
         }
 
-        room := views.Room(roomId, mtype.String())
-        title := "Hososuru | Room " + roomId
-        views.RootLayout(room, &title).Render(context.Background(), c.Response().Writer)
+        views.Room(roomId, mtype.String()).Render(context.Background(), c.Response().Writer)
 
         return nil
 	})
@@ -60,8 +56,7 @@ func main() {
 	e.GET("/api/hoso/:roomId", api.ServeHoso)
 
 	e.Any("/*", func(c echo.Context) error {
-		component := views.NotFound()
-		views.RootLayout(component, nil).Render(context.Background(), c.Response().Writer)
+		views.NotFound().Render(context.Background(), c.Response().Writer)
 		return nil
 	})
 
