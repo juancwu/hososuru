@@ -12,14 +12,17 @@ import "bytes"
 
 func handler() templ.ComponentScript {
 	return templ.ComponentScript{
-		Name: `__templ_handler_7c11`,
-		Function: `function __templ_handler_7c11(){const hoso = document.querySelector("#hoso");
+		Name: `__templ_handler_9247`,
+		Function: `function __templ_handler_9247(){const hoso = document.querySelector("#hoso");
     const playBtn = document.querySelector("#playBtn");
     const videoStatus = document.querySelector("#videoStatus");
+    const videoPlaythrough = document.querySelector("#videoPlaythrough");
+    const playthroughBtn = document.querySelector("#playthroughBtn");
     const play = "play";
     const pause = "pause";
     const chatEvt = "chat_event";
     const toggleEvt = "toggle_event";
+    window.triggeredByEvt = false;
 
     function toggleVideo(action) {
         console.log(` + "`" + `toggle video: ${action}` + "`" + `)
@@ -36,26 +39,36 @@ func handler() templ.ComponentScript {
         videoStatus.value = action;
     }
 
-    function onOpen() {
-        document.querySelector("#status").innerHTML = "Connected";
+    function updateConnStatusText(status) {
+        document.querySelector("#status").innerHTML = status;
     }
 
-    function onClose() {
-        document.querySelector("#status").innerHTML = "Disconnected";
-    }
+    document.body.addEventListener("htmx:wsConnecting", () => updateConnStatusText("Connecting..."));
+    document.body.addEventListener("htmx:wsOpen", () => updateConnStatusText("Connected."));
+    document.body.addEventListener("htmx:wsClose", () => updateConnStatusText("Disconnected."));
+    document.body.addEventListener("htmx:wsError", () => updateConnStatusText("Error."));
+    document.body.addEventListener("htmx:wsBeforeMessage", async (e) => {
+        try {
+            const json = JSON.parse(e.detail.message);
+            switch (json.eventType) {
+                case toggleEvt:
+                    toggleVideo(json.content);
+                    break;
+                case "playthrough_event":
+                    window.triggeredByEvt = true;
+                    hoso.currentTime = parseFloat(json.content);
+                    console.log(parseFloat(json.content));
+                    break;
+                default:
+                    console.log("Not actual event")
+            }
 
-    function onConnecting() {
-        document.querySelector("#status").innerHTML = "Connecting...";
-    }
-
-    document.body.addEventListener("htmx:wsConnecting", onConnecting);
-    document.body.addEventListener("htmx:wsOpen", onOpen);
-    document.body.addEventListener("htmx:wsClose", onClose);
+        } catch (error) {
+            console.log("Not a json event");
+        }
+    });
     document.body.addEventListener("htmx:wsAfterMessage", (e) => {
-        if (e.detail.message.startsWith(toggleEvt)) {
-            const action = e.detail.message.split(":")[1]
-            toggleVideo(action);
-        } else {
+        if (e.detail.message.startsWith("<div")) {
             const form = document.querySelector("#chatform");
             const chatbox = document.querySelector("#chatbox");
             const lastChild = chatbox?.lastElementChild;
@@ -68,9 +81,22 @@ func handler() templ.ComponentScript {
             }
             form.reset();
         }
-    });}`,
-		Call:       templ.SafeScript(`__templ_handler_7c11`),
-		CallInline: templ.SafeScriptInline(`__templ_handler_7c11`),
+    });
+
+    let lastSeeking = false;
+    function handlePlaythrough(evt) {
+        if (window.triggeredByEvt) {
+            window.triggeredByEvt = false;
+        } else {
+            console.log(evt.type);
+            videoPlaythrough.value = hoso.currentTime.toString();
+            playthroughBtn.click();
+        }
+    }
+
+    hoso.addEventListener("seeked", handlePlaythrough);}`,
+		Call:       templ.SafeScript(`__templ_handler_9247`),
+		CallInline: templ.SafeScriptInline(`__templ_handler_9247`),
 	}
 }
 
@@ -189,7 +215,7 @@ func Room(roomId, mtype string) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</button></form></div></div></main></div>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</button></form><form ws-send=\"send:submit\"><input hidden name=\"content\" value=\"\" id=\"videoPlaythrough\" required> <input hidden name=\"eventType\" value=\"playthrough_event\" readonly> <button id=\"playthroughBtn\" type=\"submit\" class=\"sr-only\"></button></form></div></div></main></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
