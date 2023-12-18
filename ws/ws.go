@@ -13,9 +13,9 @@ import (
 )
 
 const (
-	ChatEvent   = "chat_event"
-	ToggleEvent = "toggle_event"
-    PlaythroughEvent = "playthrough_event"
+	ChatEvent        = "chat_event"
+	ToggleEvent      = "toggle_event"
+	PlaythroughEvent = "playthrough_event"
 )
 
 type messageEvent struct {
@@ -123,27 +123,27 @@ func (c *client) writeMessage(ctx echo.Context, roomId string) {
 				switch msg.EvtType {
 				case ChatEvent:
 					fmt.Printf("Received %s\n", ChatEvent)
-                    message := views.Message(msg.Content)
-                    buffer := views.ToBuffer(message)
-                    err := c.conn.WriteMessage(websocket.TextMessage, buffer)
-                    if err != nil {
-                        ctx.Logger().Error(err)
-                        return
-                    }
-                default:
+					message := views.Message(msg.Content)
+					buffer := views.ToBuffer(message)
+					err := c.conn.WriteMessage(websocket.TextMessage, buffer)
+					if err != nil {
+						ctx.Logger().Error(err)
+						return
+					}
+				default:
 					fmt.Printf("Received %s\n", msg.EvtType)
-                    // json stringify
-                    data, err := json.Marshal(msg)
-                    if err != nil {
-                        ctx.Logger().Error(err)
-                    } else {
-                        fmt.Printf("Message to send: %s\n", string(data))
-                        err = c.conn.WriteMessage(websocket.TextMessage, data)
-                        if err != nil {
-                            ctx.Logger().Error(err)
-                            return
-                        }
-                    }
+					// json stringify
+					data, err := json.Marshal(msg)
+					if err != nil {
+						ctx.Logger().Error(err)
+					} else {
+						fmt.Printf("Message to send: %s\n", string(data))
+						err = c.conn.WriteMessage(websocket.TextMessage, data)
+						if err != nil {
+							ctx.Logger().Error(err)
+							return
+						}
+					}
 				}
 			}
 
@@ -166,18 +166,18 @@ func (r room) run(ctx echo.Context, roomId string) {
 			if !ok {
 				fmt.Printf("Broadcast to room (%s) failed\n", roomId)
 			} else {
-                if b.msgEvt.EvtType == PlaythroughEvent {
-                    for clientId, c := range r.clients {
-                        fmt.Printf("Client ID: %s\n", clientId)
-                        if b.clientId != clientId {
-                            c.msgChan <- b.msgEvt
-                        }
-                    }
-                } else {
-                    for _, c := range r.clients {
-                        c.msgChan <- b.msgEvt
-                    }
-                }
+				if b.msgEvt.EvtType == PlaythroughEvent {
+					for clientId, c := range r.clients {
+						fmt.Printf("Client ID: %s\n", clientId)
+						if b.clientId != clientId {
+							c.msgChan <- b.msgEvt
+						}
+					}
+				} else {
+					for _, c := range r.clients {
+						c.msgChan <- b.msgEvt
+					}
+				}
 			}
 
 		case c, ok := <-r.register:

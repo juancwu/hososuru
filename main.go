@@ -36,21 +36,21 @@ func main() {
 
 		filename, ok := ws.PendingRooms[roomId]
 		if !ok {
-            return c.Redirect(http.StatusTemporaryRedirect, "/404")
+			return c.Redirect(http.StatusTemporaryRedirect, "/404")
 		}
 
-        videoPath := fmt.Sprintf("%s/%s/%s", constants.TmpFileFolder, roomId, filename)
-        mtype, err := mimetype.DetectFile(videoPath)
-        if err != nil {
-            return err
-        }
+		videoPath := fmt.Sprintf("%s/%s/%s", constants.TmpFileFolder, roomId, filename)
+		mtype, err := mimetype.DetectFile(videoPath)
+		if err != nil {
+			return err
+		}
 
-        views.Room(roomId, mtype.String()).Render(context.Background(), c.Response().Writer)
+		views.Room(roomId, mtype.String()).Render(context.Background(), c.Response().Writer)
 
-        return nil
+		return nil
 	})
 
-    e.GET("/ws/:roomId", ws.Handle)
+	e.GET("/ws/:roomId", ws.Handle)
 
 	e.POST("/api/new", api.CreateNewRoom)
 	e.GET("/api/hoso/:roomId", api.ServeHoso)
